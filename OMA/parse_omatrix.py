@@ -61,12 +61,12 @@ def write_graph_file(filepath, mode):
     dirname, fname = os.path.split(filepath)
     species_1, species_2 = os.path.basename(dirname), os.path.splitext(fname)[0]
     outfile = '%s-%s.graph' % (species_1, species_2)
-    print i, outfile
+    print outfile
     if os.path.isfile(outfile) is True:
         return
 
     with open(outfile, 'a') as fout:
-        for vec in read_matrix(filepath):
+        for vec in read_matrix_file(filepath):
             try:
                 pid_1, pid_2, sw_score, pam_dist = vec[0:4]
                 pid_1 = int(pid_1)
