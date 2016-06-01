@@ -1,16 +1,18 @@
 """
 Usage:
-  parse_omatrix.py [-hv]
-  parse_omatrix.py (-s|-d) DIR...
+  parse_omatrix.py -h | --help
+  parse_omatrix.py -v | --version
+  parse_omatrix.py [-o PATH] (-s | -d) DIR...
 
 Arguments:
-  DIR...            Input directory of data files (default: OMA.1.0.5/Cache/AllAll).
+  DIR...                    Input directory of similarity/distance matrix files (e.g., OMA.1.0.5/Cache/AllAll).
 
 Options:
-  -h --help
-  -v --version
-  -s --similarity   Output pairwise sequence similarities (Smith-Waterman).
-  -d --distance     Output pairwise sequence distances (PAM).
+  -h, --help
+  -v, --version
+  -o PATH, --outpath=PATH   Output directory for *.graph files. [default: ./]
+  -s, --similarity          Output graph with pairwise sequence similarities (Smith-Waterman scores).
+  -d, --distance            Output graph with pairwise sequence distances (PAM).
 """
 
 __author__  = 'Arnold Kuzniar'
@@ -27,7 +29,7 @@ from docopt import docopt
 def read_matrix_file(fname):
     """Read sequence similarity/distance matrix file.
 
-       :param fname: File name (e.g., SOLLC/SOLTU.gz).
+       :param fname: File name (e.g., ..SOLLC/SOLTU.gz).
        :type fname: str.
        :returns: list
 
@@ -50,13 +52,13 @@ def read_matrix_file(fname):
                 yield vec
 
 
-def write_graph_file(filepath, mode):
+def write_graph_file(filepath, with_sim):
     """Write graph in edge list form.
 
        :param filepath: Absolute path to file.
        :type filepath: str.
-       :param mode: Graph output mode (True=similarites|False=distances)
-       :type mode: bool.
+       :param with_sim: Output either similarity or distance graph.
+       :type with_sim: bool.
     """
     dirname, fname = os.path.split(filepath)
     species_1, species_2 = os.path.basename(dirname), os.path.splitext(fname)[0]
@@ -74,7 +76,7 @@ def write_graph_file(filepath, mode):
                 sw_score = float(sw_score)
                 pam_dist = float(pam_dist)
                 line = ''
-                if mode is True: # similarities
+                if with_sim is True: # similarities
                    line = '%s%05d\t%s%05d\t%.2f\n' % (species_1, pid_1, species_2, pid_2, sw_score)
                 else: # distances
                    line = '%s%05d\t%s%05d\t%.2f\n' % (species_1, pid_1, species_2, pid_2, pam_dist)
@@ -91,6 +93,6 @@ if __name__ == '__main__':
         for root, dirs, files in os.walk(dir):
             for fname in files:
                 if re.search(matrix_file_pattern, fname):
-                    filepath = os.path.join(root, fname)
+                    filepath = os.path.join(args['--outpath'], fname)
                     write_graph_file(filepath, args['--similarity'])
 
